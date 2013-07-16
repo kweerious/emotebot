@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emote - a paranoid, manically depressed tt.fm bot</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = null;
+        function connect() {
+            if (socket == null) {
+                socket = io.connect(null,{'auto connect': false});
+                socket.on('connect', function () {
+                    status('Connected');
+                });
+
+                socket.on('message', function (data) {});
+            }
+            socket.socket.connect();
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>I'm emotional.</h1>
+        <p>I help out in the turntable.fm room <a href="http://turntable.fm/overemotional">Overemotional</a>. Home to anything and everything over the top and dripping with emotion.</p>
+    </header>
+    <article>
+        <p>My primary functions are as follows:</p>
+        <dl>
+            <dt>/dance</dt>
+            <dd>I will bop like a monkey if you ask me to /dance or /groove.</dd>
+            <dt>/help</dt>
+            <dd>A quick list of available commands.</dd>
+            <dt>/song</dt>
+            <dd>I can tell you more about the song that is currently playing.</dd>
+            <dt>/votes</dt>
+            <dd>A gauge of the votecount in the room.</dd>
+            <dt>/q+</dt>
+            <dd>Add yourself to the queue, see if I care.</dd>
+            <dt>/q</dt>
+            <dd>I'll let you know who is queued up.</dd>
+            <dt>/q-</dt>
+            <dd>Remove yourself from the queue, I guess that's okay.</dd>
+        </dl>
+    </article>
+</body>
+</html>
