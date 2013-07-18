@@ -254,7 +254,7 @@ bot.on('speak', function(data) {
                 + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
         });
     }
-    else if (text.match(/^\/q-$/)) {
+    else if (text.match(/^\/q\-$/)) {
     	for (var i in queue) {
      		if (queue[i] == data.name) {
      			delete queue[i];
@@ -348,7 +348,9 @@ bot.on('pmmed', function(data) {
             var song = data.room.metadata.current_song._id;
             var songName = data.room.metadata.current_song.metadata.song;
         	bot.snag();
-          	bot.playlistAdd(song);
+          	bot.playlistAll(function(data) {
+          	    bot.playlistAdd(song, data.list.length);
+          	});
         });
     }
     else if (text.match(/^\/shuffle$/)) {
