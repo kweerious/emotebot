@@ -8,10 +8,12 @@ var bot = new Bot(AUTH, USERID, ROOMID);
 var disconnected = false;
 var autobop = false;
 var users = {};
-var queue = {};
+var queue = [];
 var current_djs = {};
-var mods = {};
+var mods = [];
 var snag_count = 0;
+
+var vips = ['4f3dc5caa3f751054100073f', '4e1f4038a3f75107c708a2b2'];
 
 var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
@@ -69,6 +71,12 @@ bot.on('roomChanged', function(data) {
     queue = {};
     users = {};
     mods = data.room.metadata.moderator_id;
+    current_djs = data.room.metadata.djs;
+    
+    for (var vip in vips) {
+        mods.push(vip);
+    }    
+
     bot.speak("I'm feeling moody.");
 });
 
@@ -77,16 +85,12 @@ bot.on('registered', function(data) {
     users[user.userid] = user;
 
     if (user.name != 'kweerious') {
-        bot.speak("Oh, it's you. Hi @" + user.name + ", I guess.");
-    } else if (user.name == 'kweerious') {
-        bot.speak("My emotional circuits are overloading.");
+        bot.speak("Oh, it's you @" + user.name + ". Hi, I guess.");
     }
 });
 
 bot.on('deregistered', function(data) {
     var user = data.user[0];
-
-    delete users[user.userid];
 
     for (var i = 0; i < queue.length; i++) {
         if (queue[i] == user.name) {
@@ -113,8 +117,9 @@ bot.on('rem_moderator', function(data) {
 
 bot.on('add_dj', function(data) {
     var user = data.user[0];
+    current_djs.push(user);
 
-    for (var i in queue.length) {
+    for (var i = 0; i < queue.length; i++) {
         if (queue[i] == user.name) {
             delete queue[i];
             break;
@@ -132,7 +137,7 @@ bot.on('rem_dj', function (data) {
         }
     }
 
-    for (var i in queue) {
+    for (var i = 0; i < queue.length; i++) {
 		if (queue[i] != '') {
 			bot.speak('@' + queue[i] + ', your time has come.'); 
 			break;
@@ -179,7 +184,7 @@ bot.on('endsong', function(data) {
 bot.on('speak', function(data) {
     var text = data.text;
     
-    if (text.match(/\/dance|\/sway|\/headbang|\/bounce|\/shout|\/getdown|\/jump|\/groove|\/bop/)) {
+    if (text.match(/\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/)) {
         bot.vote('up');
     }
 	else if (text.match(/^\/help$/)) {
@@ -255,7 +260,7 @@ bot.on('speak', function(data) {
         });
     }
     else if (text.match(/^\/q\-$/)) {
-    	for (var i in queue) {
+        for (var i = 0; i < queue.length; i++) {
      		if (queue[i] == data.name) {
      			delete queue[i];
      			bot.speak('@' + data.name + ' has been removed.');
@@ -266,7 +271,7 @@ bot.on('speak', function(data) {
     else if (text.match(/^\/q$/)) {
         var dj_list = '';
         var count = 1;
-        for (var i in queue) {
+        for (var i = 0; i < queue.length; i++) {
             dj_list = dj_list.concat(count,'. ', queue[i], ' ');
      	    count++;
         }
@@ -276,34 +281,21 @@ bot.on('speak', function(data) {
         bot.speak('Queue: ' + dj_list);
     }
     else if (text.match(/^\/q\+$/)) {
-        var djs;
-        var queue_count = 0;
-        var dj_count = 0;
-
-    	for (var i in current_djs) {
-     		if (current_djs[i] != '') {
-     			dj_count++;
-     		}
-        }
-     	for (var i in queue) {
-     		if (queue[i] != '') {
-     			queue_count++;
-     		}
-     	}
-
         bot.roomInfo(false, function (roomdata) {
-            djs = roomdata.room.metadata.djs;
-            if (dj_count < 5 && queue_count == 0 ) {
+            var djs = roomdata.room.metadata.djs;
+            dj_count = roomdata.room.metadata.djcount;
+            if (dj_count < 5 && queue.length) {
               bot.speak('No one in line, hop up.');
             }
-     		else if (djs.indexOf(data.userid) < 0) {
+     		else if (djs.indexOf(data.userid) == -1) {
      		    queue[data.userid] = data.name;
                 bot.speak('@' + data.name + ' has been added to the queue.');
      		}
             else if (djs.indexOf(data.userid) >= 0) {
-                bot.speak(name + ' you are on the decks.');
+                bot.speak(data.name + ' you are on the decks.');
      		}
-        });   
+        });
+        console.log(queue);
     }
 });
 
@@ -319,7 +311,7 @@ bot.on('pmmed', function(data) {
     }
 
 	if (text.match(/^\/help$/)) {
-	    bot.speak('/q, /q+, /q-, /dance, /song, /votes, /ab, /dj, /djstop, /yoink, /skip, /shuffle, /escort');
+	    bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /escort');
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
