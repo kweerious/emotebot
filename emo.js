@@ -125,6 +125,7 @@ bot.on('add_dj', function(data) {
             break;
         }
     }
+    console.log(queue);
 });
 
 bot.on('rem_dj', function (data) {
@@ -143,18 +144,22 @@ bot.on('rem_dj', function (data) {
 			break;
 		}
 	}
+    console.log(queue);
 });
 
 bot.on('snagged', function(data) {
-    bot.speak("My emotional circuits are overloading.");
-    bot.roomInfo(true, function(data) {
-        var song = data.room.metadata.current_song._id;
-        var songName = data.room.metadata.current_song.metadata.song;
-    	bot.snag();
-      	bot.playlistAll(function(data) {
-      	    bot.playlistAdd(song, data.list.length);
-      	});
-    });
+    // only do this on the first snag
+    if (snag_count == 0) {
+        bot.speak("My emotional circuits are overloading.");
+        bot.roomInfo(true, function(data) {
+            var song = data.room.metadata.current_song._id;
+            var songName = data.room.metadata.current_song.metadata.song;
+        	bot.snag();
+          	bot.playlistAll(function(data) {
+          	    bot.playlistAdd(song, data.list.length);
+          	});
+        });
+    }
     snag_count++;
 });
 
