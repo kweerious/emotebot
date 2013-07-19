@@ -119,13 +119,12 @@ bot.on('add_dj', function(data) {
     var user = data.user[0];
     current_djs.push(user);
 
-    for (var i = 0; i < queue.length; i++) {
+    for (var i in queue) {
         if (queue[i] == user.name) {
             delete queue[i];
             break;
         }
     }
-    console.log(queue);
 });
 
 bot.on('rem_dj', function (data) {
@@ -138,13 +137,12 @@ bot.on('rem_dj', function (data) {
         }
     }
 
-    for (var i = 0; i < queue.length; i++) {
+    for (var i in queue) {
 		if (queue[i] != '') {
 			bot.speak('@' + queue[i] + ', your time has come.'); 
 			break;
 		}
 	}
-    console.log(queue);
 });
 
 bot.on('snagged', function(data) {
@@ -193,7 +191,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
 	else if (text.match(/^\/help$/)) {
-	    bot.speak('/q, /q+, /q-, /dance, /song, /votes');
+	    bot.speak('/q, /q+, /q-, /dance, /last, /song, /votes');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -235,6 +233,15 @@ bot.on('speak', function(data) {
           	});
         });
     }
+    else if (text.match(/^\/last$/)) {
+        bot.speak('Last song:');
+
+        bot.roomInfo(true, function(data) {
+            var log = data.room.metadata.songlog;
+            var last = log[log.length - 2];
+            bot.speak(':notes: ' + last.metadata.artist + ' - ' + last.metadata.song + '.');
+        });
+    }
     else if (text.match(/^\/song$/)) {
         bot.roomInfo(true, function(data) {
         	var current_song = data.room.metadata.current_song;
@@ -265,7 +272,7 @@ bot.on('speak', function(data) {
         });
     }
     else if (text.match(/^\/q\-$/)) {
-        for (var i = 0; i < queue.length; i++) {
+        for (var i in queue) {
      		if (queue[i] == data.name) {
      			delete queue[i];
      			bot.speak('@' + data.name + ' has been removed.');
@@ -276,7 +283,7 @@ bot.on('speak', function(data) {
     else if (text.match(/^\/q$/)) {
         var dj_list = '';
         var count = 1;
-        for (var i = 0; i < queue.length; i++) {
+        for (var i in queue) {
             dj_list = dj_list.concat(count,'. ', queue[i], ' ');
      	    count++;
         }
