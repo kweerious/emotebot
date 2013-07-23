@@ -13,7 +13,7 @@ var current_djs = {};
 var mods = [];
 var snag_count = 0;
 
-var vips = ['4f3dc5caa3f751054100073f', '4e1f4038a3f75107c708a2b2'];
+var vips = ['4f3dc5caa3f751054100073f', '4e1f4038a3f75107c708a2b2', '4e206f5ca3f75107b30f9798'];
 
 var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
@@ -84,8 +84,14 @@ bot.on('registered', function(data) {
     var user = data.user[0];
     users[user.userid] = user;
 
-    if (user.name != 'kweerious') {
+    if (!is_mod(user.userid)) {
         bot.speak("Oh, it's you @" + user.name + ". Hi, I guess.");
+    }
+    else if (user.name == 'kweerious') {
+        bot.speak("I feel a sudden surge of random coming on. Hallo, @kweerious.");
+    }
+    else {
+        bot.speak("Hi @" + user.name.replace('@', '') + ". I missed you...I think.");
     }
 });
 
@@ -98,7 +104,15 @@ bot.on('deregistered', function(data) {
             break;
         }
     }
+
+    bot.roomInfo(true, function(data) {
+        // don't dj alone
+        if (data.room.metadata.listeners == 1) {
+            bot.remDj();
+        }
+    });
 });
+
 
 bot.on('new_moderator', function(data) {
     mods.push(data.userid);
@@ -371,7 +385,7 @@ bot.on('pmmed', function(data) {
                 clearInterval(reorder);
                 console.log("Reorder Ended");
                 bot.pm("Entropy achieved.", sender);
-                bot.speak("Playlist shuffled. Chaos reigns.");
+                bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
             }
           }, 1000);
         });
