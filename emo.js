@@ -323,8 +323,11 @@ bot.on('speak', function(data) {
         });
         console.log(queue);
     }
-    else if (text.match(/hearts|\/hearts?/)) {
-        bot.speak(':heart: :yellow_heart: :green_heart: :blue_heart: :purple_heart:')
+    else if (text.match(/hearts|\/hearts?|<3/)) {
+        bot.speak(':heart: :yellow_heart: :green_heart: :blue_heart: :purple_heart:');
+    }
+    else if (text.match(/lol/)) {
+        bot.speak('My humor chip is malfunctioning. Was there a joke?');
     }
 });
 
