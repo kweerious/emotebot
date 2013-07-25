@@ -232,7 +232,7 @@ bot.on('speak', function(data) {
     else if (text == '/skip') {
         if (!is_mod(data.userid)) { return false; }
         bot.skip(function() {
-            bot.speak("¯\_(ツ)_/¯");
+            bot.speak("¯\\_(ツ)_/¯");
         });
     }
     else if (text == '/yoink') {
@@ -323,6 +323,9 @@ bot.on('speak', function(data) {
         });
         console.log(queue);
     }
+    else if (text.match(/hearts|\/hearts?/)) {
+        bot.speak(':heart: :yellow_heart: :green_heart: :blue_heart: :purple_heart:')
+    }
 });
 
 bot.on('pmmed', function(data) {
@@ -376,18 +379,18 @@ bot.on('pmmed', function(data) {
             console.log("Playlist length: " + playlist.list.length);
                 var i = 0;
                 var reorder = setInterval(function() {
-                if (i <= playlist.list.length) {
-                    var nextId = Math.ceil(Math.random() * playlist.list.length);
-                    bot.playlistReorder(i, nextId);
-                    console.log("Song " + i + " changed.");
-                    i++;
-                } else {
-                clearInterval(reorder);
-                console.log("Reorder Ended");
-                bot.pm("Entropy achieved.", sender);
-                bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
-            }
-          }, 1000);
+                    if (i <= playlist.list.length) {
+                        var nextId = Math.ceil(Math.random() * playlist.list.length);
+                        bot.playlistReorder(i, nextId);
+                        i++;
+                    }
+                    else {
+                        clearInterval(reorder);
+                        console.log("Reorder Ended");
+                        bot.pm("Entropy achieved.", sender);
+                        bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
+                    }
+                }, 1000);
         });
     }
     else if (text.match(/^\/escort$/)) {
