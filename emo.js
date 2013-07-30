@@ -55,6 +55,13 @@ function is_mod(user) {
     return false;
 }
 
+function format_name(name) {
+    if (name.startswith('@')) {
+        return name;
+    }
+    return '@' + name;
+}
+
 bot.on('disconnected', function(e) {
   if (!disconnected) {
     disconnected = true;
@@ -85,13 +92,13 @@ bot.on('registered', function(data) {
     users[user.userid] = user;
 
     if (!is_mod(user.userid)) {
-        bot.speak("Oh, it's you @" + user.name + ". Hi, I guess.");
+        bot.speak("Oh, it's you @" + format_name(user.name) + ". Hi, I guess.");
     }
     else if (user.name == 'kweerious') {
         bot.speak("I feel a sudden surge of random coming on. Hallo, @kweerious.");
     }
     else {
-        bot.speak("Hi @" + user.name.replace('@', '') + ". I missed you...I think.");
+        bot.speak("Hi @" + format_name(user.name) + ". I missed you...I think.");
     }
 });
 
@@ -153,7 +160,7 @@ bot.on('rem_dj', function (data) {
 
     for (var i in queue) {
 		if (queue[i] != '') {
-			bot.speak('@' + queue[i] + ', your time has come.'); 
+			bot.speak('@' + format_name(queue[i]) + ', your time has come.'); 
 			break;
 		}
 	}
@@ -315,10 +322,10 @@ bot.on('speak', function(data) {
             }
      		else if (djs.indexOf(data.userid) == -1) {
      		    queue[data.userid] = data.name;
-                bot.speak('@' + data.name + ' has been added to the queue.');
+                bot.speak(format_name(data.name) + ' has been added to the queue.');
      		}
             else if (djs.indexOf(data.userid) >= 0) {
-                bot.speak(data.name + ' you are on the decks.');
+                bot.speak(format_name(data.name) + ' you are on the decks.');
      		}
         });
         console.log(queue);
@@ -326,8 +333,14 @@ bot.on('speak', function(data) {
     else if (text.match(/hearts|\/hearts?|<3/)) {
         bot.speak(':heart: :yellow_heart: :green_heart: :blue_heart: :purple_heart:');
     }
-    else if (text.match(/lol/)) {
+    else if (text.match(/lol|LOL/)) {
         bot.speak('My humor chip is malfunctioning. Was there a joke?');
+    }
+    else if (text.match(/\/highfive|\/high5/)) {
+        bot.speak(':hand: Up high ' + format_name(data.name));
+    }
+    else if (text.match(/\/fistbump|\/fist/)) {
+        bot.speak(':fist: ' + format_name(data.name) + '. Yeah, we bad.');
     }
 });
 
