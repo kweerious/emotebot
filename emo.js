@@ -56,7 +56,8 @@ function is_mod(user) {
 }
 
 function format_name(name) {
-    if (name.startswith('@')) {
+    console.log(name);
+    if (name.substring(0, 1) == '@') {
         return name;
     }
     return '@' + name;
