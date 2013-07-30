@@ -13,7 +13,7 @@ var current_djs = {};
 var mods = [];
 var snag_count = 0;
 
-var vips = ['4f3dc5caa3f751054100073f', '4e1f4038a3f75107c708a2b2', '4e206f5ca3f75107b30f9798'];
+var vips = ['4e206f5ca3f75107b30f9798'];
 
 var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
@@ -56,7 +56,6 @@ function is_mod(user) {
 }
 
 function format_name(name) {
-    console.log(name);
     if (name.substring(0, 1) == '@') {
         return name;
     }
@@ -338,10 +337,13 @@ bot.on('speak', function(data) {
         bot.speak('My humor chip is malfunctioning. Was there a joke?');
     }
     else if (text.match(/\/highfive|\/high5/)) {
-        bot.speak(':hand: Up high ' + format_name(data.name));
+        bot.speak(':pray: Up high ' + format_name(data.name));
     }
     else if (text.match(/\/fistbump|\/fist/)) {
         bot.speak(':fist: ' + format_name(data.name) + '. Yeah, we bad.');
+    }
+    else if (text.match(/\/rave|\/party|glowstick/)) {
+        bot.speak(':traffic_light: :pill: :rotating_light: :stuck_out_tongue_winking_eye: :traffic_light:');
     }
 });
 
