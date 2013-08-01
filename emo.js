@@ -213,6 +213,9 @@ bot.on('rem_dj', function (data) {
 });
 
 bot.on('snagged', function(data) {
+    // don't respond to your own snags
+    if (data.userid == USERID) { return; }
+
     // only do this on the first snag
     if (snag_count == 0) {
         yoink();
