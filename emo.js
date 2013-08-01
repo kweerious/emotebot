@@ -48,6 +48,26 @@ function connect(roomid) {
   });
 }
 
+function shuffle_playlist() {
+    bot.playlistAll(function(playlist) {
+        console.log("Playlist length: " + playlist.list.length);
+        var i = 0;
+        var reorder = setInterval(function() {
+            if (i <= playlist.list.length) {
+                var nextId = Math.ceil(Math.random() * playlist.list.length);
+                bot.playlistReorder(i, nextId);
+                i++;
+            }
+            else {
+                clearInterval(reorder);
+                console.log("Reorder Ended");
+                bot.pm("Entropy achieved.", sender);
+                bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
+            }
+        }, 1000);
+    });
+}
+
 function is_mod(user) {
     if (mods.indexOf(user) >= 0) {
         return true;
@@ -255,7 +275,6 @@ bot.on('speak', function(data) {
     }
     else if (text.match(/^\/last$/)) {
         bot.speak('Last song:');
-
         bot.roomInfo(true, function(data) {
             var log = data.room.metadata.songlog;
             var last = log[log.length - 2];
@@ -349,7 +368,7 @@ bot.on('pmmed', function(data) {
     }
 
     if (text.match(/^\/help$/)) {
-        bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /escort');
+        bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /echo, /escort');
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
@@ -377,23 +396,14 @@ bot.on('pmmed', function(data) {
         yoink();
     }
     else if (text.match(/^\/shuffle$/)) {
-        bot.playlistAll(function(playlist) {
-            console.log("Playlist length: " + playlist.list.length);
-                var i = 0;
-                var reorder = setInterval(function() {
-                    if (i <= playlist.list.length) {
-                        var nextId = Math.ceil(Math.random() * playlist.list.length);
-                        bot.playlistReorder(i, nextId);
-                        i++;
-                    }
-                    else {
-                        clearInterval(reorder);
-                        console.log("Reorder Ended");
-                        bot.pm("Entropy achieved.", sender);
-                        bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
-                    }
-                }, 1000);
-        });
+        shuffle_playlist();
+    }
+    else if (text.match(/^\/echo .*$/)) {
+        var message = text.slice(6, text.length);
+
+        if (!(/^\s*$/).test(message)) {
+            bot.speak(message);
+        }
     }
     else if (text.match(/^\/escort$/)) {
         bot.roomInfo(true, function(data) {
