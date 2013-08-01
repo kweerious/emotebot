@@ -159,11 +159,11 @@ bot.on('rem_dj', function (data) {
     }
 
     for (var i in queue) {
-		if (queue[i] != '') {
-			bot.speak(format_name(queue[i]) + ', your time has come.'); 
-			break;
-		}
-	}
+        if (queue[i] != '') {
+            bot.speak(format_name(queue[i]) + ', your time has come.'); 
+            break;
+        }
+    }
 });
 
 bot.on('snagged', function(data) {
@@ -173,10 +173,10 @@ bot.on('snagged', function(data) {
         bot.roomInfo(true, function(data) {
             var song = data.room.metadata.current_song._id;
             var songName = data.room.metadata.current_song.metadata.song;
-        	bot.snag();
-          	bot.playlistAll(function(data) {
-          	    bot.playlistAdd(song, data.list.length);
-          	});
+            bot.snag();
+            bot.playlistAll(function(data) {
+                bot.playlistAdd(song, data.list.length);
+            });
         });
     }
     snag_count++;
@@ -190,17 +190,17 @@ bot.on('newsong', function(data) {
 });
 
 bot.on('endsong', function(data) {
-	var room = data.room;
-	var upvotes = room.metadata.upvotes;
-	var downvotes = room.metadata.downvotes;
-	var listeners = room.metadata.listeners;
+    var room = data.room;
+    var upvotes = room.metadata.upvotes;
+    var downvotes = room.metadata.downvotes;
+    var listeners = room.metadata.listeners;
     var current_song = room.metadata.current_song;
     
     if (current_song) {
         var name = current_song.metadata.song;
         var artist = current_song.metadata.artist;
     
-    	bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
+        bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
             + downvotes + ' ♥' + snag_count + ' (' + listeners + ')');
     }
 });
@@ -211,8 +211,8 @@ bot.on('speak', function(data) {
     if (text.match(/\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/)) {
         bot.vote('up');
     }
-	else if (text.match(/^\/help$/)) {
-	    bot.speak('/q, /q+, /q-, /dance, /last, /song, /votes');
+    else if (text.match(/^\/help$/)) {
+        bot.speak('/q, /q+, /q-, /dance, /last, /song, /votes');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -248,10 +248,10 @@ bot.on('speak', function(data) {
         bot.roomInfo(true, function(data) {
             var song = data.room.metadata.current_song._id;
             var songName = data.room.metadata.current_song.metadata.song;
-        	bot.snag();
-          	bot.playlistAll(function(data) {
-          	    bot.playlistAdd(song, data.list.length);
-          	});
+            bot.snag();
+            bot.playlistAll(function(data) {
+                bot.playlistAdd(song, data.list.length);
+            });
         });
     }
     else if (text.match(/^\/last$/)) {
@@ -265,11 +265,11 @@ bot.on('speak', function(data) {
     }
     else if (text.match(/^\/song$/)) {
         bot.roomInfo(true, function(data) {
-        	var current_song = data.room.metadata.current_song;
-        	if (current_song) {
-            	var songId = current_song._id;
-            	var album = current_song.metadata.album;
-            	var name = current_song.metadata.song;
+            var current_song = data.room.metadata.current_song;
+            if (current_song) {
+                var songId = current_song._id;
+                var album = current_song.metadata.album;
+                var name = current_song.metadata.song;
 
                 bot.speak(':notes: "' + name + '" :cd: Album: ' + album);
             }
@@ -278,35 +278,35 @@ bot.on('speak', function(data) {
             }
         });
     }
-	else if (text.match(/^\/votes$/)) {
-		bot.roomInfo(true, function(data) {
-        	var room = data.room;
-        	var upvotes = room.metadata.upvotes;
-        	var downvotes = room.metadata.downvotes;
-        	var listeners = room.metadata.listeners;
+    else if (text.match(/^\/votes$/)) {
+        bot.roomInfo(true, function(data) {
+            var room = data.room;
+            var upvotes = room.metadata.upvotes;
+            var downvotes = room.metadata.downvotes;
+            var listeners = room.metadata.listeners;
             var current_song = room.metadata.current_song;
             var name = current_song.metadata.song;
             var artist = current_song.metadata.artist;
     
-        	bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
+            bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
                 + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
         });
     }
     else if (text.match(/^\/q\-$/)) {
         for (var i in queue) {
-     		if (queue[i] == data.name) {
-     			delete queue[i];
-     			bot.speak(data.name + ' has been removed.');
-     			break;
-     		}
-     	}
+            if (queue[i] == data.name) {
+                delete queue[i];
+                bot.speak(data.name + ' has been removed.');
+                break;
+            }
+        }
     }
     else if (text.match(/^\/q$/)) {
         var dj_list = '';
         var count = 1;
         for (var i in queue) {
             dj_list = dj_list.concat(count,'. ', queue[i], ' ');
-     	    count++;
+            count++;
         }
         if (dj_list == '') {
             dj_list = 'Empty!';
@@ -320,13 +320,13 @@ bot.on('speak', function(data) {
             if (dj_count < 5 && queue.length) {
               bot.speak('No one in line, hop up.');
             }
-     		else if (djs.indexOf(data.userid) == -1) {
-     		    queue[data.userid] = data.name;
+            else if (djs.indexOf(data.userid) == -1) {
+                queue[data.userid] = data.name;
                 bot.speak(format_name(data.name) + ' has been added to the queue.');
-     		}
+            }
             else if (djs.indexOf(data.userid) >= 0) {
                 bot.speak(format_name(data.name) + ' you are on the decks.');
-     		}
+            }
         });
         console.log(queue);
     }
@@ -358,8 +358,8 @@ bot.on('pmmed', function(data) {
         return false;
     }
 
-	if (text.match(/^\/help$/)) {
-	    bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /escort');
+    if (text.match(/^\/help$/)) {
+        bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /escort');
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
@@ -387,10 +387,10 @@ bot.on('pmmed', function(data) {
         bot.roomInfo(true, function(data) {
             var song = data.room.metadata.current_song._id;
             var songName = data.room.metadata.current_song.metadata.song;
-        	bot.snag();
-          	bot.playlistAll(function(data) {
-          	    bot.playlistAdd(song, data.list.length);
-          	});
+            bot.snag();
+            bot.playlistAll(function(data) {
+                bot.playlistAdd(song, data.list.length);
+            });
         });
     }
     else if (text.match(/^\/shuffle$/)) {
@@ -413,7 +413,7 @@ bot.on('pmmed', function(data) {
         });
     }
     else if (text.match(/^\/escort$/)) {
-		bot.roomInfo(true, function(data) {
+        bot.roomInfo(true, function(data) {
             bot.remDj(data.room.metadata.current_dj, function() {
                 bot.speak("Hmph.");
                 bot.speak("(╯°□°）╯︵ ┻━┻");
