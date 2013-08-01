@@ -62,6 +62,32 @@ function format_name(name) {
     return '@' + name;
 }
 
+function yoink() {
+    bot.roomInfo(true, function(data) {
+        var song = data.room.metadata.current_song._id;
+        var songName = data.room.metadata.current_song.metadata.song;
+        bot.snag();
+        bot.playlistAll(function(playlist) {
+            bot.playlistAdd(song, playlist.list.length);
+            console.log('Saving ' + song + ' to playlist. (' + playlist.list.length + ')');
+            bot.speak("My emotional circuits are overloading.");
+        });
+    });
+}
+
+function vote_status(data) {
+    var room = data.room;
+    var upvotes = room.metadata.upvotes;
+    var downvotes = room.metadata.downvotes;
+    var listeners = room.metadata.listeners;
+    var current_song = room.metadata.current_song;
+    var name = current_song.metadata.song;
+    var artist = current_song.metadata.artist;
+
+    bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
+        + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
+}
+
 bot.on('disconnected', function(e) {
   if (!disconnected) {
     disconnected = true;
@@ -169,15 +195,7 @@ bot.on('rem_dj', function (data) {
 bot.on('snagged', function(data) {
     // only do this on the first snag
     if (snag_count == 0) {
-        bot.speak("My emotional circuits are overloading.");
-        bot.roomInfo(true, function(data) {
-            var song = data.room.metadata.current_song._id;
-            var songName = data.room.metadata.current_song.metadata.song;
-            bot.snag();
-            bot.playlistAll(function(data) {
-                bot.playlistAdd(song, data.list.length);
-            });
-        });
+        yoink();
     }
     snag_count++;
 });
@@ -190,25 +208,14 @@ bot.on('newsong', function(data) {
 });
 
 bot.on('endsong', function(data) {
-    var room = data.room;
-    var upvotes = room.metadata.upvotes;
-    var downvotes = room.metadata.downvotes;
-    var listeners = room.metadata.listeners;
-    var current_song = room.metadata.current_song;
-    
-    if (current_song) {
-        var name = current_song.metadata.song;
-        var artist = current_song.metadata.artist;
-    
-        bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
-            + downvotes + ' ♥' + snag_count + ' (' + listeners + ')');
-    }
+    vote_status(data);
 });
 
 bot.on('speak', function(data) {
     var text = data.text;
+    var dance_moves = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
     
-    if (text.match(/\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/)) {
+    if (text.match(dance_moves)) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
@@ -244,15 +251,7 @@ bot.on('speak', function(data) {
     }
     else if (text == '/yoink') {
         if (!is_mod(data.userid)) { return false; }
-
-        bot.roomInfo(true, function(data) {
-            var song = data.room.metadata.current_song._id;
-            var songName = data.room.metadata.current_song.metadata.song;
-            bot.snag();
-            bot.playlistAll(function(data) {
-                bot.playlistAdd(song, data.list.length);
-            });
-        });
+        yoink();
     }
     else if (text.match(/^\/last$/)) {
         bot.speak('Last song:');
@@ -280,16 +279,7 @@ bot.on('speak', function(data) {
     }
     else if (text.match(/^\/votes$/)) {
         bot.roomInfo(true, function(data) {
-            var room = data.room;
-            var upvotes = room.metadata.upvotes;
-            var downvotes = room.metadata.downvotes;
-            var listeners = room.metadata.listeners;
-            var current_song = room.metadata.current_song;
-            var name = current_song.metadata.song;
-            var artist = current_song.metadata.artist;
-    
-            bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
-                + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
+            vote_status(data);
         });
     }
     else if (text.match(/^\/q\-$/)) {
@@ -384,14 +374,7 @@ bot.on('pmmed', function(data) {
         bot.skip();
     }
     else if (text.match(/^\/yoink$/)) {
-        bot.roomInfo(true, function(data) {
-            var song = data.room.metadata.current_song._id;
-            var songName = data.room.metadata.current_song.metadata.song;
-            bot.snag();
-            bot.playlistAll(function(data) {
-                bot.playlistAdd(song, data.list.length);
-            });
-        });
+        yoink();
     }
     else if (text.match(/^\/shuffle$/)) {
         bot.playlistAll(function(playlist) {
