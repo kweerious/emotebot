@@ -411,7 +411,8 @@ bot.on('pmmed', function(data) {
     else if (text.match(/^\/songs$/)) {
         bot.roomInfo(true, function(data) {
             bot.playlistAll(function(playlist) {
-                bot.pm(playlist.list.length + 'songs in queue', sender);
+                var note = playlist.list.length + 'songs in queue';
+                bot.pm(note, sender);
             });
         });
     }
