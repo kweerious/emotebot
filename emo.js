@@ -233,8 +233,12 @@ bot.on('endsong', function(data) {
 
 bot.on('speak', function(data) {
     var text = data.text;
+    var user = data.userid;
     var dance_moves = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
-    
+
+    // bot should ignore it's own chat messages
+    if (user == USERID) { return; }
+
     if (text.match(dance_moves)) {
         bot.vote('up');
     }
@@ -360,6 +364,9 @@ bot.on('pmmed', function(data) {
     var text = data.text;
     var sender = data.senderid;
     var user = data.userid;
+
+    // bot should ignore it's own chat messages
+    if (user == USERID) { return; }
 
     // ignore non-mods
     if(!is_mod(user)) {
