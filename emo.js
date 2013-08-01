@@ -369,7 +369,7 @@ bot.on('pmmed', function(data) {
     var user = data.userid;
 
     // bot should ignore it's own chat messages
-    if (user == USERID) { return; }
+    if (sender == USERID) { return; }
 
     // ignore non-mods
     if(!is_mod(user)) {
