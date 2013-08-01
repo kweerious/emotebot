@@ -378,7 +378,7 @@ bot.on('pmmed', function(data) {
     }
 
     if (text.match(/^\/help$/)) {
-        bot.speak('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /echo, /escort');
+        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /echo, /escort', sender);
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
