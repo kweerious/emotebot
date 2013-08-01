@@ -92,13 +92,13 @@ bot.on('registered', function(data) {
     users[user.userid] = user;
 
     if (!is_mod(user.userid)) {
-        bot.speak("Oh, it's you @" + format_name(user.name) + ". Hi, I guess.");
+        bot.speak("Oh, it's you " + format_name(user.name) + ". Hi, I guess.");
     }
     else if (user.name == 'kweerious') {
         bot.speak("I feel a sudden surge of random coming on. Hallo, @kweerious.");
     }
     else {
-        bot.speak("Hi @" + format_name(user.name) + ". I missed you...I think.");
+        bot.speak("Hi " + format_name(user.name) + ". I missed you...I think.");
     }
 });
 
@@ -160,7 +160,7 @@ bot.on('rem_dj', function (data) {
 
     for (var i in queue) {
 		if (queue[i] != '') {
-			bot.speak('@' + format_name(queue[i]) + ', your time has come.'); 
+			bot.speak(format_name(queue[i]) + ', your time has come.'); 
 			break;
 		}
 	}
@@ -296,7 +296,7 @@ bot.on('speak', function(data) {
         for (var i in queue) {
      		if (queue[i] == data.name) {
      			delete queue[i];
-     			bot.speak('@' + data.name + ' has been removed.');
+     			bot.speak(data.name + ' has been removed.');
      			break;
      		}
      	}
