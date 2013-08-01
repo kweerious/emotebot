@@ -408,9 +408,8 @@ bot.on('pmmed', function(data) {
     else if (text.match(/^\/shuffle$/)) {
         shuffle_playlist();
     }
-    else if (text.match(/^\/echo .*$/)) {
-        var message = text.slice(6, text.length);
-        bot.speak(message.trim());
+    else if (message = text.match(/^\/echo (.*)$/)) {
+        bot.speak(message[1].trim());
     }
     else if (text.match(/^\/escort$/)) {
         bot.roomInfo(true, function(data) {
