@@ -410,10 +410,7 @@ bot.on('pmmed', function(data) {
     }
     else if (text.match(/^\/echo .*$/)) {
         var message = text.slice(6, text.length);
-
-        if (!(/^\s*$/).test(message)) {
-            bot.speak(message);
-        }
+        bot.speak(message.trim());
     }
     else if (text.match(/^\/escort$/)) {
         bot.roomInfo(true, function(data) {
