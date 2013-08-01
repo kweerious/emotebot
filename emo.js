@@ -378,7 +378,7 @@ bot.on('pmmed', function(data) {
     }
 
     if (text.match(/^\/help$/)) {
-        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /echo, /escort', sender);
+        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /songs, /echo, /escort', sender);
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
@@ -407,6 +407,13 @@ bot.on('pmmed', function(data) {
     }
     else if (text.match(/^\/shuffle$/)) {
         shuffle_playlist();
+    }
+    else if (text.match(/^\/songs$/)) {
+        bot.roomInfo(true, function(data) {
+            bot.playlistAll(function(playlist) {
+                bot.pm(playlist.list.length + 'songs in queue', sender);
+            });
+        });
     }
     else if (message = text.match(/^\/echo (.*)$/)) {
         bot.speak(message[1].trim());
