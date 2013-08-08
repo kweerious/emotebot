@@ -61,7 +61,6 @@ function shuffle_playlist() {
             else {
                 clearInterval(reorder);
                 console.log("Reorder Ended");
-                bot.pm("Entropy achieved.", sender);
                 bot.speak("Playlist shuffled. Chaos reigns. (" + playlist.list.length + " songs loaded)");
             }
         }, 1000);
