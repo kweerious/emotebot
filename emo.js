@@ -351,11 +351,21 @@ bot.on('speak', function(data) {
     else if (text.match(/lol|LOL/)) {
         bot.speak('My humor chip is malfunctioning. Was there a joke?');
     }
-    else if (text.match(/\/highfive|\/high5/)) {
-        bot.speak(':pray: Up high ' + format_name(data.name));
+    else if (message = text.match(/(\/highfive|\/high5)\s?(@\w+)?/)) {
+        if (message[2] != undefined) {
+            bot.speak(':pray: Up high ' + format_name(message[2]));
+        }
+        else {
+            bot.speak(':pray: Up high ' + format_name(data.name));
+        }
     }
-    else if (text.match(/\/fistbump|\/fist/)) {
-        bot.speak(':fist: ' + format_name(data.name) + '. Yeah, we bad.');
+    else if (message = text.match(/(\/fistbump|\/fist)\s?(@\w+)?/)) {
+        if (message[2] != undefined) {
+            bot.speak(':fist: ' + format_name(message[2]) + '. Yeah, we bad.');
+        }
+        else {
+            bot.speak(':fist: ' + format_name(data.name) + '. Yeah, we bad.');
+        }
     }
     else if (text.match(/\/rave|\/party|glowstick/)) {
         bot.speak(':traffic_light: :pill: :rotating_light: :stuck_out_tongue_winking_eye: :traffic_light:');
