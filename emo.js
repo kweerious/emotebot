@@ -145,7 +145,12 @@ function similar_artists(seed) {
         for(var i = 0; i < data.similarartists.artist.length; i++) {
             artists.push(data.similarartists.artist[i].name);
         }
-        bot.speak('Similar artists: ' + artists.join(', '));
+        if (artists.length > 0) {
+            bot.speak('Similar artists: ' + artists.join(', '));
+        }
+        else {
+            bot.speak('Wait, what band is this?');
+        }
     });
 }
 
@@ -167,8 +172,13 @@ function similar_tracks(artist, track) {
                 tracks.push(data.similartracks.track[i].artist.name + ' - ' + data.similartracks.track[i].name);
             }
         }
-        for (var i = 0; i < tracks.length; i++) {
-            bot.speak(tracks[i]);
+        if (tracks.length > 0) {
+            for (var i = 0; i < tracks.length; i++) {
+                bot.speak(tracks[i]);
+            }
+        }
+        else {
+            bot.speak('This song is pretty unique, you hipster you.');
         }
     });
 }
