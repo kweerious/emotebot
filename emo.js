@@ -1,7 +1,10 @@
 AUTH = process.env.AUTH;
 USERID = process.env.USERID;
 ROOMID = process.env.ROOMID;
+LASTFM = process.env.LASTFM;
 
+var querystring = require('querystring');
+var http = require('http');
 var Bot = require('ttapi');
 var bot = new Bot(AUTH, USERID, ROOMID);
 
@@ -107,6 +110,68 @@ function vote_status(data) {
         + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
 }
 
+function lastfm_call(args, callback) {
+    var json = null;
+    var options = {
+        host: 'ws.audioscrobbler.com',
+        port: 80,
+        path: '/2.0/?' + querystring.stringify(args.params)
+    }
+    http.get(options, function(response) {
+        console.log('Last.fm call: ' + response.statusCode);
+        var data = '';
+        response.on('data', function(chunk) {
+            data += chunk;
+        });
+        response.on('end', function() {
+            json = JSON.parse(data);
+            callback(json);
+        });
+    });
+}
+
+function similar_artists(seed) {
+    var args = {
+        params: {
+            method: 'artist.getsimilar',
+            artist: seed,
+            limit: 5,
+            api_key: LASTFM,
+            format: 'json'
+        }
+    }
+    var response = lastfm_call(args, function(data) {
+        var artists = [];
+        for(var i = 0; i < data.similarartists.artist.length; i++) {
+            artists.push(data.similarartists.artist[i].name);
+        }
+        bot.speak('Similar artists: ' + artists.join(', '));
+    });
+}
+
+function similar_tracks(artist, track) {
+    var args = {
+        params: {
+            method: 'track.getsimilar',
+            artist: artist,
+            track: track,
+            limit: 5,
+            api_key: LASTFM,
+            format: 'json'
+        }
+    }
+    var response = lastfm_call(args, function(data) {
+        var obj = data.similartracks.track;
+        var tracks = [];
+        for(var i = 0; i < obj.length; i++) {
+            tracks.push(obj[i].artist.name + ' - ' + obj[i].name);
+        }
+        for (var i = 0; i < tracks.length; i++) {
+            bot.speak(tracks[i]);
+        }
+    });
+}
+
 bot.on('disconnected', function(e) {
   if (!disconnected) {
     disconnected = true;
@@ -129,7 +194,7 @@ bot.on('roomChanged', function(data) {
         mods.push(vip);
     }    
 
-    bot.speak("I'm feeling moody.");
+    // bot.speak("I'm feeling moody.");
 });
 
 bot.on('registered', function(data) {
@@ -164,7 +229,6 @@ bot.on('deregistered', function(data) {
         }
     });
 });
-
 
 bot.on('new_moderator', function(data) {
     mods.push(data.userid);
@@ -245,7 +309,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
-        bot.speak('/q, /q+, /q-, /dance, /last, /song, /votes');
+        bot.speak('/q, /q+, /q-, /dance, /last, /song, /artists, /tracks, /votes');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -299,6 +363,27 @@ bot.on('speak', function(data) {
             }
             else {
                 bot.speak(':exclamation: No song is playing.');
+            }
+        });
+    }
+    else if (message = text.match(/^\/artists$/)) {
+        var artist = '';
+        bot.roomInfo(true, function(data) {
+            var current_song = data.room.metadata.current_song;
+            if (current_song) {
+                artist = current_song.metadata.artist;
+                similar_artists(artist);
+            }
+        });
+    }
+    else if (message = text.match(/^\/tracks$/)) {
+        var artist = '';
+        bot.roomInfo(true, function(data) {
+            var current_song = data.room.metadata.current_song;
+            if (current_song) {
+                artist = current_song.metadata.artist;
+                song = current_song.metadata.song;
+                similar_tracks(artist, song);
             }
         });
     }
