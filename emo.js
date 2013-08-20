@@ -143,7 +143,9 @@ function similar_artists(seed) {
     var response = lastfm_call(args, function(data) {
         var artists = [];
         for(var i = 0; i < data.similarartists.artist.length; i++) {
-            artists.push(data.similarartists.artist[i].name);
+            try {
+                artists.push(data.similarartists.artist[i].name);
+            } catch(e) {}
         }
         if (artists.length > 0) {
             bot.speak('Similar artists: ' + artists.join(', '));
@@ -168,9 +170,9 @@ function similar_tracks(artist, track) {
     var response = lastfm_call(args, function(data) {
         var tracks = [];
         for(var i = 0; i < data.similartracks.track.length; i++) {
-            if (data.similartracks.track.artist && data.similartracks.track.name) {
+            try {
                 tracks.push(data.similartracks.track[i].artist.name + ' - ' + data.similartracks.track[i].name);
-            }
+            } catch(e) {}
         }
         if (tracks.length > 0) {
             for (var i = 0; i < tracks.length; i++) {
