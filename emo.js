@@ -161,10 +161,11 @@ function similar_tracks(artist, track) {
         }
     }
     var response = lastfm_call(args, function(data) {
-        var obj = data.similartracks.track;
         var tracks = [];
-        for(var i = 0; i < obj.length; i++) {
-            tracks.push(obj[i].artist.name + ' - ' + obj[i].name);
+        for(var i = 0; i < data.similartracks.track.length; i++) {
+            if (data.similartracks.track.artist && data.similartracks.track.name) {
+                tracks.push(data.similartracks.track[i].artist.name + ' - ' + data.similartracks.track[i].name);
+            }
         }
         for (var i = 0; i < tracks.length; i++) {
             bot.speak(tracks[i]);
