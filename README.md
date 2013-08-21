@@ -10,8 +10,14 @@ My primary functions are as follows:
     A quick list of available commands.
     /song
     I can tell you more about the song that is currently playing.
-    /votes
+    /stats
     A gauge of the votecount in the room.
+    /bio [Artist Name]
+    Grabs bio information from last.fm based on the current song or specified artist.
+    /artists [Artist Name]
+    Returns similar artists from last.fm based on the current song or specified artist.
+    /tracks
+    Return similar tracks from last.fm.
     /q+
     Add yourself to the queue, see if I care.
     /q

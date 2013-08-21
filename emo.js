@@ -3,9 +3,16 @@ USERID = process.env.USERID;
 ROOMID = process.env.ROOMID;
 LASTFM = process.env.LASTFM;
 
+SONG_STATS = "♫ {{name}} by {{artist}} earned: ▲ {{upvotes}} ▼ {{downvotes}} ♥ {{snag_count}} ({{listeners}})";
+SONG_INFO = ":notes: {{name}} :cd: Album: {{album}}";
+SONG_LAST = "Last song: :notes: {{artist}} - {{song}}.";
+
 var querystring = require('querystring');
+var S = require('string');
+
 var http = require('http');
 var Bot = require('ttapi');
+
 var bot = new Bot(AUTH, USERID, ROOMID);
 
 var disconnected = false;
@@ -18,7 +25,7 @@ var snag_count = 0;
 
 var vips = ['4e206f5ca3f75107b30f9798'];
 
-var app = require('http').createServer(handler);
+var app = http.createServer(handler);
 var io = require('socket.io').listen(app);
 var fs = require('fs');
 
@@ -78,7 +85,8 @@ function is_mod(user) {
 }
 
 function format_name(name) {
-    if (name.substring(0, 1) == '@') {
+    var user = S(name);
+    if (user.startsWith('@')) {
         return name;
     }
     return '@' + name;
@@ -99,23 +107,26 @@ function yoink() {
 
 function vote_status(data) {
     var room = data.room;
-    var upvotes = room.metadata.upvotes;
-    var downvotes = room.metadata.downvotes;
-    var listeners = room.metadata.listeners;
     var current_song = room.metadata.current_song;
-    var name = current_song.metadata.song;
-    var artist = current_song.metadata.artist;
 
-    bot.speak('♫ "' + name +'" by ' + artist + ' earned: ▲' + upvotes + ' ▼'
-        + downvotes + ' ♥' + snag_count + ' (' + listeners + ')'); 
+    values = {
+        name: current_song.metadata.song,
+        artist: current_song.metadata.artist,
+        upvotes: room.metadata.upvotes,
+        downvotes: room.metadata.downvotes,
+        listeners: room.metadata.listeners,
+        snag_count: snag_count
+    }
+
+    bot.speak(S(SONG_STATS).template(values).s);
 }
 
-function lastfm_call(args, callback) {
+function lastfm_call(params, callback) {
     var json = null;
     var options = {
         host: 'ws.audioscrobbler.com',
         port: 80,
-        path: '/2.0/?' + querystring.stringify(args.params)
+        path: '/2.0/?' + querystring.stringify(params)
     }
     http.get(options, function(response) {
         console.log('Last.fm call: ' + response.statusCode);
@@ -130,17 +141,32 @@ function lastfm_call(args, callback) {
     });
 }
 
-function similar_artists(seed) {
-    var args = {
-        params: {
-            method: 'artist.getsimilar',
-            artist: seed,
-            limit: 5,
-            api_key: LASTFM,
-            format: 'json'
-        }
+function artist_bio(seed) {
+    var params = {
+        method: 'artist.getinfo',
+        artist: seed,
+        autocorrect: 1,
+        api_key: LASTFM,
+        format: 'json'
     }
-    var response = lastfm_call(args, function(data) {
+    var response = lastfm_call(params, function(data) {
+        var summary = S(data.artist.bio.summary)
+        bot.speak(summary.stripTags().decodeHTMLEntities().s);
+        if (data.artist.ontour != undefined && data.artist.ontour == 1) {
+            bot.speak("/me SQUEEEEE, " + data.artist.name + " is on TOUR!");
+        }
+    });
+}
+
+function similar_artists(seed) {
+    var params = {
+        method: 'artist.getsimilar',
+        artist: seed,
+        limit: 5,
+        api_key: LASTFM,
+        format: 'json'
+    }
+    var response = lastfm_call(params, function(data) {
         var artists = [];
         for(var i = 0; i < data.similarartists.artist.length; i++) {
             try {
@@ -157,17 +183,17 @@ function similar_artists(seed) {
 }
 
 function similar_tracks(artist, track) {
-    var args = {
-        params: {
-            method: 'track.getsimilar',
-            artist: artist,
-            track: track,
-            limit: 5,
-            api_key: LASTFM,
-            format: 'json'
-        }
+    // Remove turntable's version indicators)
+    track = track.replace(/\s+\(.* Version\)|\(.*Single.*\)|\(.*Edit.*\)/, '');
+    var params = {
+        method: 'track.getsimilar',
+        artist: artist,
+        track: track,
+        limit: 5,
+        api_key: LASTFM,
+        format: 'json'
     }
-    var response = lastfm_call(args, function(data) {
+    var response = lastfm_call(params, function(data) {
         var tracks = [];
         for(var i = 0; i < data.similartracks.track.length; i++) {
             try {
@@ -322,7 +348,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
-        bot.speak('/q, /q+, /q-, /dance, /last, /song, /artists, /tracks, /votes');
+        bot.speak('/q, /q+, /q-, /dance, /last, /song, /bio, /artists, /tracks, /stats');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -357,50 +383,70 @@ bot.on('speak', function(data) {
         yoink();
     }
     else if (text.match(/^\/last$/)) {
-        bot.speak('Last song:');
         bot.roomInfo(true, function(data) {
             var log = data.room.metadata.songlog;
             var last = log[log.length - 2];
-            bot.speak(':notes: ' + last.metadata.artist + ' - ' + last.metadata.song + '.');
+            var values = {
+                artist: last.metadata.artist,
+                song: last.metadata.song
+            }
+            bot.speak(S(SONG_LAST).template(values).s);
         });
     }
     else if (text.match(/^\/song$/)) {
         bot.roomInfo(true, function(data) {
             var current_song = data.room.metadata.current_song;
             if (current_song) {
-                var songId = current_song._id;
-                var album = current_song.metadata.album;
-                var name = current_song.metadata.song;
-
-                bot.speak(':notes: "' + name + '" :cd: Album: ' + album);
+                var values = {
+                    album: current_song.metadata.album,
+                    name: current_song.metadata.song
+                }
+                bot.speak(S(SONG_INFO).template(values).s);
             }
             else {
                 bot.speak(':exclamation: No song is playing.');
             }
         });
     }
-    else if (message = text.match(/^\/artists$/)) {
-        var artist = '';
-        bot.roomInfo(true, function(data) {
-            var current_song = data.room.metadata.current_song;
-            if (current_song) {
-                artist = current_song.metadata.artist;
-                similar_artists(artist);
-            }
-        });
+    else if (message = text.match(/^\/bio\s?(.*)?$/)) {
+        if (message[1] == undefined) {
+            bot.roomInfo(true, function(data) {
+                var current_song = data.room.metadata.current_song;
+                if (current_song) {
+                    artist = current_song.metadata.artist;
+                    artist_bio(artist);
+                }
+            });
+        }
+        else {
+            artist_bio(message[1]);
+        }
     }
-    else if (message = text.match(/^\/tracks$/)) {
-        var artist = '';
+    else if (message = text.match(/^\/artists\s?(.*)?$/)) {
+        if (message[1] == undefined) {
+            bot.roomInfo(true, function(data) {
+                var current_song = data.room.metadata.current_song;
+                if (current_song) {
+                    var artist = current_song.metadata.artist;
+                    similar_artists(artist);
+                }
+            });
+        }
+        else {
+            similar_artists(message[1]);
+        }
+    }
+    else if (text.match(/^\/tracks\s?(.*)?$/)) {
         bot.roomInfo(true, function(data) {
             var current_song = data.room.metadata.current_song;
             if (current_song) {
-                artist = current_song.metadata.artist;
-                song = current_song.metadata.song;
+                var artist = current_song.metadata.artist;
+                var song = current_song.metadata.song;
                 similar_tracks(artist, song);
             }
         });
     }
-    else if (text.match(/^\/votes$/)) {
+    else if (text.match(/^\/stats$/)) {
         bot.roomInfo(true, function(data) {
             vote_status(data);
         });
