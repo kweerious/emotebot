@@ -3,9 +3,8 @@ USERID = process.env.USERID;
 ROOMID = process.env.ROOMID;
 LASTFM = process.env.LASTFM;
 
-SONG_STATS = "♫ {{name}} by {{artist}} earned: ▲ {{upvotes}} ▼ {{downvotes}} ♥ {{snag_count}} ({{listeners}})";
-SONG_INFO = ":notes: {{name}} :cd: Album: {{album}}";
-SONG_LAST = "Last song: :notes: {{artist}} - {{song}}.";
+TT_VERSIONS = /\s+\(.* Version\)|\(.*Single.*\)|\(.*Edit.*\)/;
+BOPS = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
 
 var querystring = require('querystring');
 var S = require('string');
@@ -117,8 +116,8 @@ function vote_status(data) {
         listeners: room.metadata.listeners,
         snag_count: snag_count
     }
-
-    bot.speak(S(SONG_STATS).template(values).s);
+    var str = "♫ {{name}} by {{artist}} earned: ▲ {{upvotes}} ▼ {{downvotes}} ♥ {{snag_count}} ({{listeners}})";
+    bot.speak(S(str).template(values).s);
 }
 
 function lastfm_call(params, callback) {
@@ -153,7 +152,8 @@ function artist_bio(seed) {
         var summary = S(data.artist.bio.summary)
         bot.speak(summary.stripTags().decodeHTMLEntities().s);
         if (data.artist.ontour != undefined && data.artist.ontour == 1) {
-            bot.speak("/me SQUEEEEE, " + data.artist.name + " is on TOUR!");
+            var str = "/me SQUEEEEE, {{artist}} is on TOUR!";
+            bot.speak(S(str).template({artist: data.artist.name}));
         }
     });
 }
@@ -183,8 +183,8 @@ function similar_artists(seed) {
 }
 
 function similar_tracks(artist, track) {
-    // Remove turntable's version indicators)
-    track = track.replace(/\s+\(.* Version\)|\(.*Single.*\)|\(.*Edit.*\)/, '');
+    // Remove turntable's version indicators
+    track = track.replace(TT_VERSIONS, '');
     var params = {
         method: 'track.getsimilar',
         artist: artist,
@@ -197,7 +197,12 @@ function similar_tracks(artist, track) {
         var tracks = [];
         for(var i = 0; i < data.similartracks.track.length; i++) {
             try {
-                tracks.push(data.similartracks.track[i].artist.name + ' - ' + data.similartracks.track[i].name);
+                var str = "{{artist}} - {{song}}";
+                var values = {
+                    artist: data.similartracks.track[i].artist.name,
+                    song: data.similartracks.track[i].name
+                }
+                tracks.push(S(str).template(values));
             } catch(e) {}
         }
         if (tracks.length > 0) {
@@ -239,15 +244,18 @@ bot.on('roomChanged', function(data) {
 bot.on('registered', function(data) {
     var user = data.user[0];
     users[user.userid] = user;
+    name = format_name(user.name);
 
     if (!is_mod(user.userid)) {
-        bot.speak("Oh, it's you " + format_name(user.name) + ". Hi, I guess.");
+        var str = "Oh, it's you {{name}}. Hi, I guess.";
+        bot.speak(S(str).template({name: name}));
     }
-    else if (user.name == 'kweerious') {
+    else if (name == 'kweerious') {
         bot.speak("I feel a sudden surge of random coming on. Hallo, @kweerious.");
     }
     else {
-        bot.speak("Hi " + format_name(user.name) + ". I missed you...I think.");
+        var str = "Hi {{name}}. I missed you...I think.";
+        bot.speak(S(str).template({name: name}));
     }
 });
 
@@ -308,7 +316,8 @@ bot.on('rem_dj', function (data) {
 
     for (var i in queue) {
         if (queue[i] != '') {
-            bot.speak(format_name(queue[i]) + ', your time has come.'); 
+            var str = "{{name}}, your time has come.";
+            bot.speak(S(str).template({name: format_name(queue[i])})); 
             break;
         }
     }
@@ -339,7 +348,7 @@ bot.on('endsong', function(data) {
 bot.on('speak', function(data) {
     var text = data.text;
     var user = data.userid;
-    var dance_moves = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
+    var dance_moves = BOPS;
 
     // bot should ignore it's own chat messages
     if (user == USERID) { return; }
@@ -386,22 +395,25 @@ bot.on('speak', function(data) {
         bot.roomInfo(true, function(data) {
             var log = data.room.metadata.songlog;
             var last = log[log.length - 2];
+
+            var str = "Last song: :notes: {{artist}} - {{song}}.";
             var values = {
                 artist: last.metadata.artist,
                 song: last.metadata.song
             }
-            bot.speak(S(SONG_LAST).template(values).s);
+            bot.speak(S(str).template(values).s);
         });
     }
     else if (text.match(/^\/song$/)) {
         bot.roomInfo(true, function(data) {
             var current_song = data.room.metadata.current_song;
             if (current_song) {
+                var str = ":notes: {{name}} :cd: Album: {{album}}";
                 var values = {
                     album: current_song.metadata.album,
                     name: current_song.metadata.song
                 }
-                bot.speak(S(SONG_INFO).template(values).s);
+                bot.speak(S(str).template(values).s);
             }
             else {
                 bot.speak(':exclamation: No song is playing.');
@@ -455,7 +467,8 @@ bot.on('speak', function(data) {
         for (var i in queue) {
             if (queue[i] == data.name) {
                 delete queue[i];
-                bot.speak(data.name + ' has been removed.');
+                var str = "{{name}} has been removed.";
+                bot.speak(S(str).template({name: data.name}));
                 break;
             }
         }
@@ -475,44 +488,48 @@ bot.on('speak', function(data) {
     else if (text.match(/^\/q\+$/)) {
         bot.roomInfo(false, function (roomdata) {
             var djs = roomdata.room.metadata.djs;
-            dj_count = roomdata.room.metadata.djcount;
+            var dj_count = roomdata.room.metadata.djcount;
+            var name = format_name(data.name);
+
             if (dj_count < 5 && queue.length) {
               bot.speak('No one in line, hop up.');
             }
             else if (djs.indexOf(data.userid) == -1) {
                 queue[data.userid] = data.name;
-                bot.speak(format_name(data.name) + ' has been added to the queue.');
+                
+                var str = "{{name}} has been added to the queue."
+                bot.speak(S(str).template({name: name}));
             }
             else if (djs.indexOf(data.userid) >= 0) {
-                bot.speak(format_name(data.name) + ' you are on the decks.');
+                var str = "{{name}} you are on the decks.";
+                bot.speak(S(str).template({name: name}));
             }
         });
-        console.log(queue);
     }
     else if (text.match(/hearts|\/hearts?|<3/)) {
-        bot.speak(':heart: :yellow_heart: :green_heart: :blue_heart: :purple_heart:');
+        bot.speak(':heart::yellow_heart::green_heart::blue_heart::purple_heart:');
     }
     else if (text.match(/lol|LOL/)) {
         bot.speak('My humor chip is malfunctioning. Was there a joke?');
     }
     else if (message = text.match(/(\/highfive|\/high5)\s?(@\w+)?/)) {
+        var name = format_name(data.name);
         if (message[2] != undefined) {
-            bot.speak(':pray: Up high ' + format_name(message[2]));
+            name = format_name(message[2]);
         }
-        else {
-            bot.speak(':pray: Up high ' + format_name(data.name));
-        }
+        var str = ":pray: Up high {{name}}"
+        bot.speak(S(str).template({name: name}));
     }
     else if (message = text.match(/(\/fistbump|\/fist)\s?(@\w+)?/)) {
+        var name = format_name(data.name);
         if (message[2] != undefined) {
-            bot.speak(':fist: ' + format_name(message[2]) + '. Yeah, we bad.');
+            name = format_name(message[2]);
         }
-        else {
-            bot.speak(':fist: ' + format_name(data.name) + '. Yeah, we bad.');
-        }
+        var str = ":fist: {{name}}. Yeah, we bad.";
+        bot.speak(S(str).template({name: name}));
     }
     else if (text.match(/\/rave|\/party|glowstick/)) {
-        bot.speak(':traffic_light: :pill: :rotating_light: :stuck_out_tongue_winking_eye: :traffic_light:');
+        bot.speak(':traffic_light::pill::rotating_light::stuck_out_tongue_winking_eye::traffic_light:');
     }
 });
 
