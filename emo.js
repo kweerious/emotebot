@@ -370,7 +370,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
-        bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /song, /bio, /artists, /tracks, /stats');
+        bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /bio, /artists, /tracks, /stats');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -418,22 +418,6 @@ bot.on('speak', function(data) {
                 song: last.metadata.song
             }
             bot.speak(S(str).template(values).s);
-        });
-    }
-    else if (text.match(/^\/song$/)) {
-        bot.roomInfo(true, function(data) {
-            var current_song = data.room.metadata.current_song;
-            if (current_song) {
-                var str = ":notes: {{name}} :cd: Album: {{album}}";
-                var values = {
-                    album: current_song.metadata.album,
-                    name: current_song.metadata.song
-                }
-                bot.speak(S(str).template(values).s);
-            }
-            else {
-                bot.speak(':exclamation: No song is playing.');
-            }
         });
     }
     else if (message = text.match(/^\/bio\s?(.*)?$/)) {

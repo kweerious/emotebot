@@ -6,21 +6,30 @@ My primary functions are as follows:
 
     /dance
     I will bop like a monkey if you ask me to /dance or /groove.
+
     /help
     A quick list of available commands.
-    /song
-    I can tell you more about the song that is currently playing.
+
+    /runtime
+    Returns an update on the total runtime and number of songs in the bot's playlist.
+
     /stats
     A gauge of the votecount in the room.
+
     /bio [Artist Name]
     Grabs bio information from last.fm based on the current song or specified artist.
+
     /artists [Artist Name]
     Returns similar artists from last.fm based on the current song or specified artist.
+
     /tracks
     Return similar tracks from last.fm.
+
     /q+
     Add yourself to the queue, see if I care.
+
     /q
     I'll let you know who is queued up.
+
     /q-
     Remove yourself from the queue, I guess that's okay.
