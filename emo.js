@@ -251,7 +251,7 @@ bot.on('roomChanged', function(data) {
         mods.push(vip);
     }    
 
-    // bot.speak("I'm feeling moody.");
+    bot.speak("I'm feeling moody.");
 });
 
 bot.on('registered', function(data) {
