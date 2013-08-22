@@ -76,7 +76,7 @@ function shuffle_playlist() {
     });
 }
 
-function playtime() {
+function runtime() {
     bot.playlistAll(function(playlist) {
         var time = 0;
         for (var i = 0; i < playlist.list.length; i++) {
@@ -84,8 +84,8 @@ function playtime() {
             time += song.metadata.length;
         }
         var hours = time / (60*60);
-        var str = 'Total Playlist Runtime: {{hours}} hours';
-        bot.speak(S(str).template({hours: hours.toFixed(1)}));
+        var str = 'Total Playlist Runtime is {{hours}} hours with {{total}} songs.';
+        bot.speak(S(str).template({hours: hours.toFixed(1), total: playlist.list.length}));
     });
 }
 
@@ -370,7 +370,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
-        bot.speak('/q, /q+, /q-, /dance, /last, /song, /bio, /artists, /tracks, /stats');
+        bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /song, /bio, /artists, /tracks, /stats');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -404,9 +404,8 @@ bot.on('speak', function(data) {
         if (!is_mod(data.userid)) { return false; }
         yoink();
     }
-    else if (text.match(/^\/playtime$/)) {
-        if (!is_mod(data.userid)) { return false; }
-        playtime();
+    else if (text.match(/^\/runtime$/)) {
+        runtime();
     }
     else if (text.match(/^\/last$/)) {
         bot.roomInfo(true, function(data) {
@@ -565,7 +564,7 @@ bot.on('pmmed', function(data) {
     }
 
     if (text.match(/^\/help$/)) {
-        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /songs, /echo, /escort', sender);
+        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /runtime, /echo, /escort', sender);
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
@@ -595,16 +594,8 @@ bot.on('pmmed', function(data) {
     else if (text.match(/^\/shuffle$/)) {
         shuffle_playlist();
     }
-    else if (text.match(/^\/playtime$/)) {
-        playtime();
-    }
-    else if (text.match(/^\/songs$/)) {
-        bot.roomInfo(true, function(data) {
-            bot.playlistAll(function(playlist) {
-                var note = playlist.list.length + ' songs in queue';
-                bot.pm(note, sender);
-            });
-        });
+    else if (text.match(/^\/runtime$/)) {
+        runtime();
     }
     else if (message = text.match(/^\/echo (.*)$/)) {
         bot.speak(message[1].trim());
