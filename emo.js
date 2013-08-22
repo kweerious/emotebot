@@ -76,6 +76,19 @@ function shuffle_playlist() {
     });
 }
 
+function playtime() {
+    bot.playlistAll(function(playlist) {
+        var time = 0;
+        for (var i = 0; i < playlist.list.length; i++) {
+            var song = playlist.list[i];
+            time += song.metadata.length;
+        }
+        var hours = time / (60*60);
+        var str = 'Total Playlist Runtime: {{hours}} hours';
+        bot.speak(S(str).template({hours: hours.toFixed(1)}));
+    });
+}
+
 function is_mod(user) {
     if (mods.indexOf(user) >= 0) {
         return true;
@@ -238,7 +251,7 @@ bot.on('roomChanged', function(data) {
         mods.push(vip);
     }    
 
-    bot.speak("I'm feeling moody.");
+    // bot.speak("I'm feeling moody.");
 });
 
 bot.on('registered', function(data) {
@@ -390,6 +403,10 @@ bot.on('speak', function(data) {
     else if (text == '/yoink') {
         if (!is_mod(data.userid)) { return false; }
         yoink();
+    }
+    else if (text.match(/^\/playtime$/)) {
+        if (!is_mod(data.userid)) { return false; }
+        playtime();
     }
     else if (text.match(/^\/last$/)) {
         bot.roomInfo(true, function(data) {
@@ -577,6 +594,9 @@ bot.on('pmmed', function(data) {
     }
     else if (text.match(/^\/shuffle$/)) {
         shuffle_playlist();
+    }
+    else if (text.match(/^\/playtime$/)) {
+        playtime();
     }
     else if (text.match(/^\/songs$/)) {
         bot.roomInfo(true, function(data) {
