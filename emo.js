@@ -175,7 +175,7 @@ function similar_artists(seed) {
     var params = {
         method: 'artist.getsimilar',
         artist: seed,
-        limit: 5,
+        limit: 8,
         api_key: LASTFM,
         format: 'json'
     }
