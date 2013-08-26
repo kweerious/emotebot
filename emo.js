@@ -186,7 +186,7 @@ function similar_artists(seed) {
                 artists.push(data.similarartists.artist[i].name);
             } catch(e) {}
         }
-        if (artists.length > 0) {
+        if (artists.length > 1) {
             bot.speak('Similar artists: ' + artists.join(', '));
         }
         else {
