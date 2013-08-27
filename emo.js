@@ -520,7 +520,7 @@ bot.on('speak', function(data) {
         var str = ":pray: Up high {{name}}"
         bot.speak(S(str).template({name: name}));
     }
-    else if (message = text.match(/(\/fistbump|\/fist)\s?(@?p*$)?/)) {
+    else if (message = text.match(/(\/fistbump|\/fist)\s?(@?.*$)?/)) {
         var name = format_name(data.name);
         if (message[2] != undefined) {
             name = format_name(message[2]);
