@@ -512,7 +512,7 @@ bot.on('speak', function(data) {
     else if (text.match(/lol|LOL/)) {
         bot.speak('My humor chip is malfunctioning. Was there a joke?');
     }
-    else if (message = text.match(/(\/highfive|\/high5)\s?(@?\.*$)?/)) {
+    else if (message = text.match(/(\/highfive|\/high5)\s?(@.*)?$/)) {
         var name = format_name(data.name);
         if (message[2] != undefined) {
             name = format_name(message[2]);
@@ -520,7 +520,7 @@ bot.on('speak', function(data) {
         var str = ":pray: Up high {{name}}"
         bot.speak(S(str).template({name: name}));
     }
-    else if (message = text.match(/(\/fistbump|\/fist)\s?(@?.*$)?/)) {
+    else if (message = text.match(/(\/fistbump|\/fist)\s?(@.*$)?$/)) {
         var name = format_name(data.name);
         if (message[2] != undefined) {
             name = format_name(message[2]);
