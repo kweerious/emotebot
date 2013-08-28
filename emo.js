@@ -154,7 +154,7 @@ function lastfm_call(params, callback) {
     });
 }
 
-function artist_bio(seed) {
+function artist_bio(seed, sender) {
     seed = seed.replace(TT_FEATURED, '');
     var params = {
         method: 'artist.getinfo',
@@ -164,16 +164,21 @@ function artist_bio(seed) {
         format: 'json'
     }
     var response = lastfm_call(params, function(data) {
-        var summary = S(data.artist.bio.summary)
-        bot.speak(summary.stripTags().decodeHTMLEntities().s);
-        if (data.artist.ontour != undefined && data.artist.ontour == 1) {
-            var str = "/me SQUEEEEE, {{artist}} is on TOUR!";
-            bot.speak(S(str).template({artist: data.artist.name}));
+        var summary = S(data.artist.bio.summary).stripTags().decodeHTMLEntities().s;
+        if (typeof sender !== "undefined") {
+            bot.pm(summary, sender);
+        }
+        else {
+            bot.speak(summary);
+            if (data.artist.ontour != undefined && data.artist.ontour == 1) {
+                var str = "/me SQUEEEEE, {{artist}} is on TOUR!";
+                bot.speak(S(str).template({artist: data.artist.name}));
+            }            
         }
     });
 }
 
-function similar_artists(seed) {
+function similar_artists(seed, sender) {
     seed = seed.replace(TT_FEATURED, '');
     var params = {
         method: 'artist.getsimilar',
@@ -189,16 +194,27 @@ function similar_artists(seed) {
                 artists.push(data.similarartists.artist[i].name);
             } catch(e) {}
         }
-        if (artists.length > 1) {
-            bot.speak('Similar artists: ' + artists.join(', '));
+        
+        if (typeof sender !== "undefined") {
+            if (artists.length > 1) {
+                bot.pm('Similar artists: ' + artists.join(', '), sender);
+            }
+            else {
+                bot.pm('Blergh. Nothing found.', sender);
+            }
         }
         else {
-            bot.speak('Wait, what band is this?');
+            if (artists.length > 1) {
+                bot.speak('Similar artists: ' + artists.join(', '));
+            }
+            else {
+                bot.speak('Wait, what band is this?');
+            }
         }
     });
 }
 
-function similar_tracks(artist, track) {
+function similar_tracks(artist, track, sender) {
     // Remove turntable's version indicators
     artist = artist.replace(TT_FEATURED, '');
     track = track.replace(TT_VERSIONS, '');
@@ -222,13 +238,23 @@ function similar_tracks(artist, track) {
                 tracks.push(S(str).template(values));
             } catch(e) {}
         }
-        if (tracks.length > 0) {
-            for (var i = 0; i < tracks.length; i++) {
-                bot.speak(tracks[i]);
+        if (typeof sender !== "undefined") {
+            if (tracks.length > 0) {
+                bot.pm(tracks.join(', '), sender);
+            }
+            else {
+                bot.pm('Blergh. Nothing found.', sender);
             }
         }
         else {
-            bot.speak('This song is pretty unique, you hipster you.');
+            if (tracks.length > 0) {
+                for (var i = 0; i < tracks.length; i++) {
+                    bot.speak(tracks[i]);
+                }
+            }
+            else {
+                bot.speak('This song is pretty unique, you hipster you.');
+            }
         }
     });
 }
@@ -374,7 +400,7 @@ bot.on('speak', function(data) {
         bot.vote('up');
     }
     else if (text.match(/^\/help$/)) {
-        bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /bio, /artists, /tracks, /stats');
+        bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /bio, /artists [artist name], /tracks, /stats');
     }
     else if (text == '/ab') {
         if (!is_mod(data.userid)) { return false; }
@@ -552,7 +578,7 @@ bot.on('pmmed', function(data) {
     }
 
     if (text.match(/^\/help$/)) {
-        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /runtime, /echo, /escort', sender);
+        bot.pm('/ab, /dj, /djstop, /yoink, /skip, /shuffle, /runtime, /echo, /escort, /bio, /artists [artist name], /tracks', sender);
     }
     else if (text.match(/^\/dj$/)) {
         bot.pm('Fine...', sender);
@@ -594,6 +620,44 @@ bot.on('pmmed', function(data) {
                 bot.speak("Hmph.");
                 bot.speak("(╯°□°）╯︵ ┻━┻");
             });
+        });
+    }
+    else if (message = text.match(/^\/bio\s?(.*)?$/)) {
+        if (message[1] == undefined) {
+            bot.roomInfo(true, function(data) {
+                var current_song = data.room.metadata.current_song;
+                if (current_song) {
+                    artist = current_song.metadata.artist;
+                    artist_bio(artist, sender);
+                }
+            });
+        }
+        else {
+            artist_bio(message[1], sender);
+        }
+    }
+    else if (message = text.match(/^\/artists\s?(.*)?$/)) {
+        if (message[1] == undefined) {
+            bot.roomInfo(true, function(data) {
+                var current_song = data.room.metadata.current_song;
+                if (current_song) {
+                    var artist = current_song.metadata.artist;
+                    similar_artists(artist, sender);
+                }
+            });
+        }
+        else {
+            similar_artists(message[1]);
+        }
+    }
+    else if (text.match(/^\/tracks\s?(.*)?$/)) {
+        bot.roomInfo(true, function(data) {
+            var current_song = data.room.metadata.current_song;
+            if (current_song) {
+                var artist = current_song.metadata.artist;
+                var song = current_song.metadata.song;
+                similar_tracks(artist, song, sender);
+            }
         });
     }
 });
