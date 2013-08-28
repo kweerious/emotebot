@@ -4,6 +4,7 @@ ROOMID = process.env.ROOMID;
 LASTFM = process.env.LASTFM;
 
 TT_VERSIONS = /\s+\(.* Version\)|\(.*Single.*\)|\(.*Edit.*\)/;
+TT_FEATURED = /\(feat\. .*\)/;
 BOPS = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
 
 var querystring = require('querystring');
@@ -154,6 +155,7 @@ function lastfm_call(params, callback) {
 }
 
 function artist_bio(seed) {
+    seed = seed.replace(TT_FEATURED, '');
     var params = {
         method: 'artist.getinfo',
         artist: seed,
@@ -172,6 +174,7 @@ function artist_bio(seed) {
 }
 
 function similar_artists(seed) {
+    seed = seed.replace(TT_FEATURED, '');
     var params = {
         method: 'artist.getsimilar',
         artist: seed,
@@ -197,6 +200,7 @@ function similar_artists(seed) {
 
 function similar_tracks(artist, track) {
     // Remove turntable's version indicators
+    artist = artist.replace(TT_FEATURED, '');
     track = track.replace(TT_VERSIONS, '');
     var params = {
         method: 'track.getsimilar',
