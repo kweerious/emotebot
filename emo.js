@@ -647,7 +647,7 @@ bot.on('pmmed', function(data) {
             });
         }
         else {
-            similar_artists(message[1]);
+            similar_artists(message[1], sender);
         }
     }
     else if (text.match(/^\/tracks\s?(.*)?$/)) {
