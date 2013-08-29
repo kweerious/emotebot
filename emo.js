@@ -3,9 +3,9 @@ USERID = process.env.USERID;
 ROOMID = process.env.ROOMID;
 LASTFM = process.env.LASTFM;
 
-TT_VERSIONS = /\s+\(.* Version\)|\(.*Single.*\)|\(.*Edit.*\)/;
+TT_VERSIONS = /\s+\([^\(]*Version\)|\([^\(]*Single[^\(]*\)|\([^\(]*Edit[^\(]*\)/;
 TT_FEATURED = /\(feat\. .*\)/;
-BOPS = /\/dance|\/sway|\/headbang|\/bounce|\/jump|\/groove|\/bop/;
+BOPS = /\/dance|\/sway|\/swing|\/breakdance|\/bounce|\/jump|\/groove|\/bop/;
 
 var querystring = require('querystring');
 var S = require('string');
@@ -398,6 +398,14 @@ bot.on('speak', function(data) {
 
     if (text.match(dance_moves)) {
         bot.vote('up');
+    }
+    else if (text.match(/\/headbang/)) {
+        bot.vote('up');
+        bot.speak('/me :metal:');
+    }
+    else if (text.match(/\/twerk/)) {
+        bot.vote('up');
+        bot.speak('I have not the articulate hips to "twerk".');
     }
     else if (text.match(/^\/help$/)) {
         bot.speak('/q, /q+, /q-, /dance, /runtime, /last, /bio, /artists [artist name], /tracks, /stats');
