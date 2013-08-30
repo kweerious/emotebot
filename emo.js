@@ -296,6 +296,9 @@ bot.on('registered', function(data) {
     else if (name == 'kweerious') {
         bot.speak("I feel a sudden surge of random coming on. Hallo, @kweerious.");
     }
+    else if (user.userid == '4e1f4038a3f75107c708a2b2') {
+        bot.speak('Looking like a young Marlon Brando, it is ' + name);
+    }
     else {
         var str = "Hi {{name}}. I missed you...I think.";
         bot.speak(S(str).template({name: name}));
