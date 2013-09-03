@@ -183,7 +183,7 @@ function similar_artists(seed, sender) {
     var params = {
         method: 'artist.getsimilar',
         artist: seed,
-        limit: 8,
+        limit: 10,
         api_key: LASTFM,
         format: 'json'
     }
@@ -222,7 +222,7 @@ function similar_tracks(artist, track, sender) {
         method: 'track.getsimilar',
         artist: artist,
         track: track,
-        limit: 5,
+        limit: 10,
         api_key: LASTFM,
         format: 'json'
     }
